@@ -10,7 +10,7 @@ class HttpFetcher(ABC):
     async def aclose(self) -> None:
         return None
 
-    async def _aenter_(self) -> "HttpFetcher":
+    async def __aenter__(self) -> "HttpFetcher":
         return self
 
     async def __aexit__(self, exc_type, exc, tb) -> None:

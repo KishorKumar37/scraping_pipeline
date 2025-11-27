@@ -1,6 +1,10 @@
+from scraper.http.httpx_fetcher import HttpxFetcher
 from scraper.http.interface import HttpFetcher
 from scraper.output.interface import OutputWriter
+from scraper.output.jsonl_writer import JsonlWriter
+from scraper.parsers.basic_html_parser import BasicHtmlParser
 from scraper.parsers.interface import HtmlParser
+from scraper.text_processing.basic_text_processor import BasicTextProcessor
 from scraper.text_processing.interface import TextProcessor
 from scraper.traversal.breadth_first_traversal import BreadthFirstTraversalStrategy
 from scraper.traversal.interface import TraversalStrategy
@@ -15,13 +19,14 @@ class CrawlerBuilder:
     and then build a fully-wired Crawler instance.
     """
 
-    def __init__(self, domain_url: str, start_url: str) -> None:
-        self._domain_url = domain_url
-        self._start_url = start_url
+    def __init__(self, domain_url: str, start_url: str, output_path: str) -> None:
+        self._domain_url: str = domain_url
+        self._start_url: str = start_url
+        self._output_path: str = output_path
 
         # defaults
-        self._max_pages: int = 100
-        self._max_depth: int = 3
+        self._max_pages: int | None = None
+        self._max_depth: int | None = None
         self._concurrency: int = 5
 
         self._traverser: TraversalStrategy | None = None
@@ -30,11 +35,11 @@ class CrawlerBuilder:
         self._text_processor: TextProcessor | None = None
         self._output_writer: OutputWriter | None = None
 
-    def with_max_pages(self, max_pages: int) -> "CrawlerBuilder":
+    def with_max_pages(self, max_pages: int | None) -> "CrawlerBuilder":
         self._max_pages = max_pages
         return self
 
-    def with_max_depth(self, max_depth: int) -> "CrawlerBuilder":
+    def with_max_depth(self, max_depth: int | None) -> "CrawlerBuilder":
         self._max_depth = max_depth
         return self
 
@@ -68,12 +73,11 @@ class CrawlerBuilder:
         with sensible defaults.
         """
 
-        # TODO : Substitute defaults for remaining components
         traverser = self._traverser or BreadthFirstTraversalStrategy()
-        http_fetcher = self._http_fetcher
-        html_parser = self._html_parser
-        text_processor = self._text_processor
-        output_writer = self._output_writer
+        http_fetcher = self._http_fetcher or HttpxFetcher()
+        html_parser = self._html_parser or BasicHtmlParser()
+        text_processor = self._text_processor or BasicTextProcessor()
+        output_writer = self._output_writer or JsonlWriter(path=self._output_path)
 
         return Crawler(
             domain_url=self._domain_url,
