@@ -12,6 +12,7 @@ class HttpxFetcher(HttpFetcher):
         timeout: float = 3.0,
         user_agent: str = "ai-collections-scraper/0.1",
     ) -> None:
+        """Initialize an AsyncClient with crawler-friendly defaults."""
         self._client = httpx.AsyncClient(
             timeout=httpx.Timeout(timeout),
             headers={
@@ -23,6 +24,7 @@ class HttpxFetcher(HttpFetcher):
         return None
 
     async def get(self, url: str) -> httpx.Response | None:
+        """Fetch a URL with httpx and swallow expected errors."""
         try:
             response: httpx.Response = await self._client.get(url)
             response.raise_for_status()
@@ -43,4 +45,5 @@ class HttpxFetcher(HttpFetcher):
         return response
 
     async def aclose(self) -> None:
+        """Close the underlying httpx client."""
         return await self._client.aclose()

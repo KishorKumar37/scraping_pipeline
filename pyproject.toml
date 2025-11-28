@@ -8,6 +8,7 @@ dependencies = [
     "aiofiles>=25.1.0",
     "beautifulsoup4>=4.14.2",
     "httpx>=0.28.1",
+    "langdetect>=1.0.9",
     "pydantic>=2.12.5",
 ]
 

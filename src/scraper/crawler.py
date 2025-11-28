@@ -29,6 +29,7 @@ class Crawler:
         max_pages: int | None,
         max_depth: int | None,
     ) -> None:
+        """Wire together crawler dependencies and crawl limits."""
         self.domain_url = extract_domain_root(domain_url)
         self.start_url = normalize_url(start_url)
         if not is_same_domain(self.start_url, self.domain_url):
@@ -48,12 +49,14 @@ class Crawler:
         return None
 
     async def __aenter__(self) -> "Crawler":
+        """Enter async contexts for managed components."""
         self._cleanup_stack = []
         await self._enter_component("_http_fetcher")
         await self._enter_component("_output_writer")
         return self
 
     async def _enter_component(self, attr_name: str) -> None:
+        """Enter component context if supported and record cleanup action."""
         component: Any | None = getattr(self, attr_name, None)
         if component is None:
             return
@@ -66,14 +69,15 @@ class Crawler:
                 component = entered_component
             self._cleanup_stack.append(("exit", component))
         elif callable(getattr(component, "aclose", None)):
-            # Component only supports explicit close.
             self._cleanup_stack.append(("close", component))
         return None
 
     async def __aexit__(self, exc_type, exc, tb) -> None:
+        """Close managed resources on exit."""
         await self.aclose()
 
     async def aclose(self) -> None:
+        """Run cleanup callbacks collected during __aenter__."""
         if not hasattr(self, "_cleanup_stack"):
             return None
 
@@ -94,6 +98,7 @@ class Crawler:
         return None
 
     async def crawl(self) -> None:
+        """Traverse URLs, fetch pages, and persist processed results."""
         self._seen.clear()
         pages_written = 0
 

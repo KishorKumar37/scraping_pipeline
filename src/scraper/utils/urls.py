@@ -21,7 +21,6 @@ def extract_domain_root(url: str) -> str:
         https://example.com/some/page  →  https://example.com/
     """
     parsed = urlparse(url)
-    # Handle cases like missing scheme or invalid URL
     if not parsed.scheme or not parsed.netloc:
         raise ValueError(f"Invalid URL: {url}")
 
@@ -48,32 +47,25 @@ def normalize_url(url: str) -> str:
         - Many sites use query params for real content
         - Problem statement did NOT instruct removing them
     """
-    # 1. Remove fragments
     url, _ = urldefrag(url)
 
     parsed = urlparse(url)
 
-    # 2. Lowercase scheme + netloc
     scheme = parsed.scheme.lower()
     netloc = parsed.netloc.lower()
 
-    # 3. Remove default ports
     if scheme == "http" and netloc.endswith(":80"):
         netloc = netloc[:-3]
     elif scheme == "https" and netloc.endswith(":443"):
         netloc = netloc[:-4]
 
-    # 4. Normalize path
     path = parsed.path
 
-    # Optional: Normalize trailing slash
-    # Rule: If no file extension is present → add trailing slash
     if path == "":
         path = "/"
     elif not path.endswith("/") and "." not in path.split("/")[-1]:
         path += "/"
 
-    # 5. Rebuild URL
     normalized = f"{scheme}://{netloc}{path}"
     if parsed.query:
         normalized += f"?{parsed.query}"
@@ -96,7 +88,6 @@ def ensure_absolute_url(base_url: str, href: str) -> Optional[str]:
 
     href = href.strip()
 
-    # Skip JS links, mailto:, tel:, etc.
     if (
         href.startswith("javascript:")
         or href.startswith("mailto:")
@@ -104,7 +95,6 @@ def ensure_absolute_url(base_url: str, href: str) -> Optional[str]:
     ):
         return None
 
-    # Convert relative URLs:
     return urljoin(base_url, href)
 
 
@@ -139,8 +129,6 @@ def clean_and_normalize_link(
         2. Normalize (remove fragments, normalize path, lowercase, trailing slash)
         3. Check same domain
         4. Return clean or None
-
-    This is what the Crawler should use before pushing URLs to the traversal frontier.
     """
     abs_url = ensure_absolute_url(base_url, href)
     if abs_url is None:

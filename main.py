@@ -9,6 +9,7 @@ from scraper.text_processing.basic_text_processor import BasicTextProcessor
 
 
 def parse_args() -> argparse.Namespace:
+    """Parse command-line options for the crawler CLI."""
     parser = argparse.ArgumentParser(description="Run the scraping crawler.")
     parser.add_argument(
         "--input-url",
@@ -36,6 +37,7 @@ def parse_args() -> argparse.Namespace:
 
 
 async def run_crawler(args: argparse.Namespace) -> None:
+    """Instantiate dependencies and execute the crawler."""
     builder = CrawlerBuilder(
         domain_url=args.input_url,
         start_url=args.input_url,
@@ -59,6 +61,7 @@ async def run_crawler(args: argparse.Namespace) -> None:
 
 
 def main() -> None:
+    """Entry point for the CLI."""
     args = parse_args()
     asyncio.run(run_crawler(args))
 

@@ -20,11 +20,11 @@ class CrawlerBuilder:
     """
 
     def __init__(self, domain_url: str, start_url: str, output_path: str) -> None:
+        """Initialize builder defaults and user-provided URLs."""
         self._domain_url: str = domain_url
         self._start_url: str = start_url
         self._output_path: str = output_path
 
-        # defaults
         self._max_pages: int | None = None
         self._max_depth: int | None = None
         self._concurrency: int = 5
@@ -36,42 +36,47 @@ class CrawlerBuilder:
         self._output_writer: OutputWriter | None = None
 
     def with_max_pages(self, max_pages: int | None) -> "CrawlerBuilder":
+        """Set an optional cap on how many pages to persist."""
         self._max_pages = max_pages
         return self
 
     def with_max_depth(self, max_depth: int | None) -> "CrawlerBuilder":
+        """Set an optional traversal depth limit."""
         self._max_depth = max_depth
         return self
 
     def with_concurrency(self, concurrency: int) -> "CrawlerBuilder":
+        """Set desired concurrency (currently unused)."""
         self._concurrency = concurrency
         return self
 
     def with_traversal(self, traverser: TraversalStrategy) -> "CrawlerBuilder":
+        """Inject a traversal strategy implementation."""
         self._traverser = traverser
         return self
 
     def with_fetcher(self, fetcher: HttpFetcher) -> "CrawlerBuilder":
+        """Inject an HTTP fetcher implementation."""
         self._http_fetcher = fetcher
         return self
 
     def with_html_parser(self, parser: HtmlParser) -> "CrawlerBuilder":
+        """Inject an HTML parser implementation."""
         self._html_parser = parser
         return self
 
     def with_text_processor(self, processor: TextProcessor) -> "CrawlerBuilder":
+        """Inject a text processor implementation."""
         self._text_processor = processor
         return self
 
     def with_output_writer(self, writer: OutputWriter) -> "CrawlerBuilder":
+        """Inject an output writer implementation."""
         self._output_writer = writer
         return self
 
     def build(self) -> Crawler:
-        """
-        Build and return a Crawler instance, filling in any missing components
-        with sensible defaults.
-        """
+        """Create a crawler, filling any missing components with defaults."""
 
         traverser = self._traverser or BreadthFirstTraversalStrategy()
         http_fetcher = self._http_fetcher or HttpxFetcher()
