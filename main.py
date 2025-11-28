@@ -6,6 +6,7 @@ from scraper.http.httpx_fetcher import HttpxFetcher
 from scraper.output.jsonl_writer import JsonlWriter
 from scraper.parsers.basic_html_parser import BasicHtmlParser
 from scraper.text_processing.basic_text_processor import BasicTextProcessor
+from scraper.utils.logging_config import LoggingLevels, configure_logging
 
 
 def parse_args() -> argparse.Namespace:
@@ -33,6 +34,12 @@ def parse_args() -> argparse.Namespace:
         default=None,
         help="Optional maximum number of pages to persist; omit for no limit.",
     )
+    parser.add_argument(
+        "--log-level",
+        choices=[level.value for level in LoggingLevels],
+        default=LoggingLevels.info.value,
+        help="Logging verbosity (default: INFO).",
+    )
     return parser.parse_args()
 
 
@@ -49,7 +56,9 @@ async def run_crawler(args: argparse.Namespace) -> None:
         builder = builder.with_max_pages(args.max_pages)
 
     crawler = (
-        builder.with_fetcher(HttpxFetcher(timeout=10.0))
+        builder.with_fetcher(
+            HttpxFetcher(timeout=3, min_request_interval=0.5, max_retries=2)
+        )
         .with_html_parser(BasicHtmlParser())
         .with_text_processor(BasicTextProcessor())
         .with_output_writer(JsonlWriter(args.outputpath))
@@ -63,6 +72,7 @@ async def run_crawler(args: argparse.Namespace) -> None:
 def main() -> None:
     """Entry point for the CLI."""
     args = parse_args()
+    configure_logging(args.log_level)
     asyncio.run(run_crawler(args))
 
 
